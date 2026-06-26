@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "prompt-diff"
+version = "0.1.0"
+description = "CLI tool for versioning, diffing, and evaluating AI prompts"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+authors = [
+    { name = "Prompt Diff Contributors" },
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing :: General",
+]
+dependencies = [
+    "click>=8.1.0",
+    "pyyaml>=6.0",
+    "rich>=13.0",
+    "pydantic>=2.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "prompt-diff"]
+
+[project.scripts]
+prompt-diff = "prompt_diff.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/EdgarOrtegaRamirez/prompt-diff"
+Repository = "https://github.com/EdgarOrtegaRamirez/prompt-diff"
+Issues = "https://github.com/EdgarOrtegaRamirez/prompt-diff/issues"
+
+[tool.setuptools.packages.find]
+include = ["prompt_diff*"]
+
+[tool.setuptools.dynamic]
+version = { attr = "prompt_diff.__version__" }
