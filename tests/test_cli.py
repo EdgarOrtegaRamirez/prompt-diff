@@ -1,16 +1,22 @@
 """Integration tests for prompt-diff CLI."""
 
 import json
-import subprocess
 import tempfile
 from pathlib import Path
 
+import pytest
+from click.testing import CliRunner
 
+from prompt_diff.cli import main
 from prompt_diff.engine import PromptRegistry
 
 
 class TestCLIIntegration:
-    """End-to-end CLI tests."""
+    """End-to-end CLI tests using Click's CliRunner."""
+
+    @pytest.fixture
+    def runner(self):
+        return CliRunner()
 
     def _create_empty_registry(self):
         """Create a temporary empty registry file."""
@@ -19,25 +25,20 @@ class TestCLIIntegration:
         f.close()
         return f.name
 
-    def test_create_version(self):
+    def test_create_version(self, runner):
         """Test creating a prompt version via CLI."""
         reg_path = self._create_empty_registry()
 
         try:
-            result = subprocess.run(
-                [
-                    "python", "-m", "prompt_diff", "create",
-                    "--name", "test prompt",
-                    "--content", "You are a helpful assistant.",
-                    "--tag", "test",
-                    "--output", reg_path,
-                ],
-                capture_output=True,
-                text=True,
-                cwd="/root/workspace/prompt-diff",
-            )
-            assert result.returncode == 0, f"CLI failed: {result.stderr}"
-            assert "Created version" in result.stdout
+            result = runner.invoke(main, [
+                "create",
+                "--name", "test prompt",
+                "--content", "You are a helpful assistant.",
+                "--tag", "test",
+                "--output", reg_path,
+            ])
+            assert result.exit_code == 0, f"CLI failed: {result.output}"
+            assert "Created version" in result.output
 
             # Verify registry was created
             reg = PromptRegistry.load(reg_path)
@@ -47,170 +48,126 @@ class TestCLIIntegration:
         finally:
             Path(reg_path).unlink(missing_ok=True)
 
-    def test_show_version(self):
+    def test_show_version(self, runner):
         """Test showing a prompt version."""
         reg_path = self._create_empty_registry()
 
         try:
             # Create first
-            subprocess.run(
-                [
-                    "python", "-m", "prompt_diff", "create",
-                    "--name", "test",
-                    "--content", "hello world",
-                    "--output", reg_path,
-                ],
-                capture_output=True, text=True,
-                cwd="/root/workspace/prompt-diff",
-            )
+            runner.invoke(main, [
+                "create",
+                "--name", "test",
+                "--content", "hello world",
+                "--output", reg_path,
+            ])
 
             # Show it
-            result = subprocess.run(
-                ["python", "-m", "prompt_diff", "show", reg_path, "v001"],
-                capture_output=True, text=True,
-                cwd="/root/workspace/prompt-diff",
-            )
-            assert result.returncode == 0, f"CLI failed: {result.stderr}"
-            assert "hello world" in result.stdout
+            result = runner.invoke(main, ["show", reg_path, "v001"])
+            assert result.exit_code == 0, f"CLI failed: {result.output}"
+            assert "hello world" in result.output
         finally:
             Path(reg_path).unlink(missing_ok=True)
 
-    def test_list_versions(self):
+    def test_list_versions(self, runner):
         """Test listing prompt versions."""
         reg_path = self._create_empty_registry()
 
         try:
             # Create two versions
-            subprocess.run(
-                ["python", "-m", "prompt_diff", "create",
-                 "--name", "first", "--content", "a",
-                 "--output", reg_path],
-                capture_output=True, text=True,
-                cwd="/root/workspace/prompt-diff",
-            )
-            subprocess.run(
-                ["python", "-m", "prompt_diff", "create",
-                 "--name", "second", "--content", "b",
-                 "--output", reg_path],
-                capture_output=True, text=True,
-                cwd="/root/workspace/prompt-diff",
-            )
+            runner.invoke(main, [
+                "create",
+                "--name", "first", "--content", "a",
+                "--output", reg_path,
+            ])
+            runner.invoke(main, [
+                "create",
+                "--name", "second", "--content", "b",
+                "--output", reg_path,
+            ])
 
-            result = subprocess.run(
-                ["python", "-m", "prompt_diff", "list-versions", reg_path],
-                capture_output=True, text=True,
-                cwd="/root/workspace/prompt-diff",
-            )
-            assert result.returncode == 0, f"CLI failed: {result.stderr}"
-            assert "v001" in result.stdout
-            assert "v002" in result.stdout
+            result = runner.invoke(main, ["list-versions", reg_path])
+            assert result.exit_code == 0, f"CLI failed: {result.output}"
+            assert "v001" in result.output
+            assert "v002" in result.output
         finally:
             Path(reg_path).unlink(missing_ok=True)
 
-    def test_diff_command(self):
+    def test_diff_command(self, runner):
         """Test diffing two versions."""
         reg_path = self._create_empty_registry()
 
         try:
-            subprocess.run(
-                ["python", "-m", "prompt_diff", "create",
-                 "--name", "v1", "--content", "hello\nworld",
-                 "--output", reg_path],
-                capture_output=True, text=True,
-                cwd="/root/workspace/prompt-diff",
-            )
-            subprocess.run(
-                ["python", "-m", "prompt_diff", "create",
-                 "--name", "v2", "--content", "hello\nearth",
-                 "--output", reg_path],
-                capture_output=True, text=True,
-                cwd="/root/workspace/prompt-diff",
-            )
+            runner.invoke(main, [
+                "create",
+                "--name", "v1", "--content", "hello\nworld",
+                "--output", reg_path,
+            ])
+            runner.invoke(main, [
+                "create",
+                "--name", "v2", "--content", "hello\nearth",
+                "--output", reg_path,
+            ])
 
-            result = subprocess.run(
-                ["python", "-m", "prompt_diff", "diff", reg_path, "v001", "v002", "--format", "stats"],
-                capture_output=True, text=True,
-                cwd="/root/workspace/prompt-diff",
-            )
-            assert result.returncode == 0, f"CLI failed: {result.stderr}"
-            assert "v001" in result.stdout or "v002" in result.stdout
+            result = runner.invoke(main, [
+                "diff", reg_path, "v001", "v002", "--format", "stats",
+            ])
+            assert result.exit_code == 0, f"CLI failed: {result.output}"
+            assert "v001" in result.output or "v002" in result.output
         finally:
             Path(reg_path).unlink(missing_ok=True)
 
-    def test_info_command(self):
+    def test_info_command(self, runner):
         """Test showing registry info."""
         reg_path = self._create_empty_registry()
 
         try:
-            subprocess.run(
-                ["python", "-m", "prompt_diff", "create",
-                 "--name", "test", "--content", "hello",
-                 "--tag", "prod",
-                 "--output", reg_path],
-                capture_output=True, text=True,
-                cwd="/root/workspace/prompt-diff",
-            )
+            runner.invoke(main, [
+                "create",
+                "--name", "test", "--content", "hello",
+                "--tag", "prod",
+                "--output", reg_path,
+            ])
 
-            result = subprocess.run(
-                ["python", "-m", "prompt_diff", "info", reg_path],
-                capture_output=True, text=True,
-                cwd="/root/workspace/prompt-diff",
-            )
-            assert result.returncode == 0, f"CLI failed: {result.stderr}"
-            assert "test" in result.stdout.lower()
+            result = runner.invoke(main, ["info", reg_path])
+            assert result.exit_code == 0, f"CLI failed: {result.output}"
+            assert "test" in result.output.lower()
         finally:
             Path(reg_path).unlink(missing_ok=True)
 
-    def test_version_flag(self):
+    def test_version_flag(self, runner):
         """Test --version flag."""
-        result = subprocess.run(
-            ["python", "-m", "prompt_diff", "--version"],
-            capture_output=True, text=True,
-            cwd="/root/workspace/prompt-diff",
-        )
-        assert result.returncode == 0
-        assert "0.1.0" in result.stdout
+        result = runner.invoke(main, ["--version"])
+        assert result.exit_code == 0
+        assert "0.1.0" in result.output
 
-    def test_sample_config(self):
+    def test_sample_config(self, runner):
         """Test sample-config command."""
-        result = subprocess.run(
-            ["python", "-m", "prompt_diff", "sample-config"],
-            capture_output=True, text=True,
-            cwd="/root/workspace/prompt-diff",
-        )
-        assert result.returncode == 0, f"CLI failed: {result.stderr}"
-        data = json.loads(result.stdout)
+        result = runner.invoke(main, ["sample-config"])
+        assert result.exit_code == 0, f"CLI failed: {result.output}"
+        data = json.loads(result.output)
         assert "versions" in data
         assert len(data["versions"]) == 2
 
-    def test_search_by_tag(self):
+    def test_search_by_tag(self, runner):
         """Test searching by tag."""
         reg_path = self._create_empty_registry()
 
         try:
-            subprocess.run(
-                ["python", "-m", "prompt_diff", "create",
-                 "--name", "prod prompt", "--content", "a",
-                 "--tag", "prod",
-                 "--output", reg_path],
-                capture_output=True, text=True,
-                cwd="/root/workspace/prompt-diff",
-            )
-            subprocess.run(
-                ["python", "-m", "prompt_diff", "create",
-                 "--name", "dev prompt", "--content", "b",
-                 "--tag", "dev",
-                 "--output", reg_path],
-                capture_output=True, text=True,
-                cwd="/root/workspace/prompt-diff",
-            )
+            runner.invoke(main, [
+                "create",
+                "--name", "prod prompt", "--content", "a",
+                "--tag", "prod",
+                "--output", reg_path,
+            ])
+            runner.invoke(main, [
+                "create",
+                "--name", "dev prompt", "--content", "b",
+                "--tag", "dev",
+                "--output", reg_path,
+            ])
 
-            result = subprocess.run(
-                ["python", "-m", "prompt_diff", "search", reg_path, "--tag", "prod"],
-                capture_output=True, text=True,
-                cwd="/root/workspace/prompt-diff",
-            )
-            assert result.returncode == 0, f"CLI failed: {result.stderr}"
-            assert "prod prompt" in result.stdout
+            result = runner.invoke(main, ["search", reg_path, "--tag", "prod"])
+            assert result.exit_code == 0, f"CLI failed: {result.output}"
+            assert "prod prompt" in result.output
         finally:
             Path(reg_path).unlink(missing_ok=True)
