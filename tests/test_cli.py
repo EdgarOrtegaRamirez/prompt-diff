@@ -5,9 +5,8 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-import pytest
 
-from prompt_diff.engine import PromptRegistry, PromptVersion
+from prompt_diff.engine import PromptRegistry
 
 
 class TestCLIIntegration:

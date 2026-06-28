@@ -4,14 +4,12 @@ import json
 import tempfile
 from pathlib import Path
 
-import pytest
 
 from prompt_diff.engine import (
     PromptVersion,
     DiffResult,
     PromptRegistry,
     compute_diff,
-    DiffFormat,
 )
 
 

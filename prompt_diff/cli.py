@@ -14,7 +14,6 @@ from prompt_diff.__init__ import __version__
 from prompt_diff.engine import (
     PromptRegistry,
     PromptVersion,
-    DiffFormat,
     compute_diff,
 )
 
