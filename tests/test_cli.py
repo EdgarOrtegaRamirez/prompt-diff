@@ -30,13 +30,20 @@ class TestCLIIntegration:
         reg_path = self._create_empty_registry()
 
         try:
-            result = runner.invoke(main, [
-                "create",
-                "--name", "test prompt",
-                "--content", "You are a helpful assistant.",
-                "--tag", "test",
-                "--output", reg_path,
-            ])
+            result = runner.invoke(
+                main,
+                [
+                    "create",
+                    "--name",
+                    "test prompt",
+                    "--content",
+                    "You are a helpful assistant.",
+                    "--tag",
+                    "test",
+                    "--output",
+                    reg_path,
+                ],
+            )
             assert result.exit_code == 0, f"CLI failed: {result.output}"
             assert "Created version" in result.output
 
@@ -54,12 +61,18 @@ class TestCLIIntegration:
 
         try:
             # Create first
-            runner.invoke(main, [
-                "create",
-                "--name", "test",
-                "--content", "hello world",
-                "--output", reg_path,
-            ])
+            runner.invoke(
+                main,
+                [
+                    "create",
+                    "--name",
+                    "test",
+                    "--content",
+                    "hello world",
+                    "--output",
+                    reg_path,
+                ],
+            )
 
             # Show it
             result = runner.invoke(main, ["show", reg_path, "v001"])
@@ -74,16 +87,30 @@ class TestCLIIntegration:
 
         try:
             # Create two versions
-            runner.invoke(main, [
-                "create",
-                "--name", "first", "--content", "a",
-                "--output", reg_path,
-            ])
-            runner.invoke(main, [
-                "create",
-                "--name", "second", "--content", "b",
-                "--output", reg_path,
-            ])
+            runner.invoke(
+                main,
+                [
+                    "create",
+                    "--name",
+                    "first",
+                    "--content",
+                    "a",
+                    "--output",
+                    reg_path,
+                ],
+            )
+            runner.invoke(
+                main,
+                [
+                    "create",
+                    "--name",
+                    "second",
+                    "--content",
+                    "b",
+                    "--output",
+                    reg_path,
+                ],
+            )
 
             result = runner.invoke(main, ["list-versions", reg_path])
             assert result.exit_code == 0, f"CLI failed: {result.output}"
@@ -97,20 +124,42 @@ class TestCLIIntegration:
         reg_path = self._create_empty_registry()
 
         try:
-            runner.invoke(main, [
-                "create",
-                "--name", "v1", "--content", "hello\nworld",
-                "--output", reg_path,
-            ])
-            runner.invoke(main, [
-                "create",
-                "--name", "v2", "--content", "hello\nearth",
-                "--output", reg_path,
-            ])
+            runner.invoke(
+                main,
+                [
+                    "create",
+                    "--name",
+                    "v1",
+                    "--content",
+                    "hello\nworld",
+                    "--output",
+                    reg_path,
+                ],
+            )
+            runner.invoke(
+                main,
+                [
+                    "create",
+                    "--name",
+                    "v2",
+                    "--content",
+                    "hello\nearth",
+                    "--output",
+                    reg_path,
+                ],
+            )
 
-            result = runner.invoke(main, [
-                "diff", reg_path, "v001", "v002", "--format", "stats",
-            ])
+            result = runner.invoke(
+                main,
+                [
+                    "diff",
+                    reg_path,
+                    "v001",
+                    "v002",
+                    "--format",
+                    "stats",
+                ],
+            )
             assert result.exit_code == 0, f"CLI failed: {result.output}"
             assert "v001" in result.output or "v002" in result.output
         finally:
@@ -121,12 +170,20 @@ class TestCLIIntegration:
         reg_path = self._create_empty_registry()
 
         try:
-            runner.invoke(main, [
-                "create",
-                "--name", "test", "--content", "hello",
-                "--tag", "prod",
-                "--output", reg_path,
-            ])
+            runner.invoke(
+                main,
+                [
+                    "create",
+                    "--name",
+                    "test",
+                    "--content",
+                    "hello",
+                    "--tag",
+                    "prod",
+                    "--output",
+                    reg_path,
+                ],
+            )
 
             result = runner.invoke(main, ["info", reg_path])
             assert result.exit_code == 0, f"CLI failed: {result.output}"
@@ -153,18 +210,34 @@ class TestCLIIntegration:
         reg_path = self._create_empty_registry()
 
         try:
-            runner.invoke(main, [
-                "create",
-                "--name", "prod prompt", "--content", "a",
-                "--tag", "prod",
-                "--output", reg_path,
-            ])
-            runner.invoke(main, [
-                "create",
-                "--name", "dev prompt", "--content", "b",
-                "--tag", "dev",
-                "--output", reg_path,
-            ])
+            runner.invoke(
+                main,
+                [
+                    "create",
+                    "--name",
+                    "prod prompt",
+                    "--content",
+                    "a",
+                    "--tag",
+                    "prod",
+                    "--output",
+                    reg_path,
+                ],
+            )
+            runner.invoke(
+                main,
+                [
+                    "create",
+                    "--name",
+                    "dev prompt",
+                    "--content",
+                    "b",
+                    "--tag",
+                    "dev",
+                    "--output",
+                    reg_path,
+                ],
+            )
 
             result = runner.invoke(main, ["search", reg_path, "--tag", "prod"])
             assert result.exit_code == 0, f"CLI failed: {result.output}"

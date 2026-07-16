@@ -14,6 +14,7 @@ from typing import Any
 
 class DiffFormat(str, Enum):
     """Output format for diff results."""
+
     UNIFIED = "unified"
     CONTEXT = "context"
     STATS = "stats"
@@ -23,11 +24,14 @@ class DiffFormat(str, Enum):
 @dataclass
 class PromptVersion:
     """Represents a single version of a prompt."""
+
     id: str
     name: str
     content: str
     metadata: dict[str, Any] = field(default_factory=dict)
-    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    created_at: str = field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+    )
     tags: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
@@ -44,6 +48,7 @@ class PromptVersion:
 @dataclass
 class DiffResult:
     """Result of comparing two prompt versions."""
+
     base: str
     target: str
     added: list[str] = field(default_factory=list)
@@ -60,7 +65,8 @@ class DiffResult:
         target_lines = self.target.splitlines()
         return "\n".join(
             difflib.unified_diff(
-                base_lines, target_lines,
+                base_lines,
+                target_lines,
                 fromfile=f"v{self.base}",
                 tofile=f"v{self.target}",
             )
@@ -86,9 +92,12 @@ class DiffResult:
 @dataclass
 class PromptRegistry:
     """Registry of prompt versions with versioning support."""
+
     name: str
     versions: list[PromptVersion] = field(default_factory=list)
-    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    created_at: str = field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+    )
 
     def add_version(self, version: PromptVersion) -> None:
         self.versions.append(version)
@@ -118,7 +127,11 @@ class PromptRegistry:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> PromptRegistry:
         versions = [PromptVersion.from_dict(v) for v in data.get("versions", [])]
-        return cls(name=data.get("name", ""), versions=versions, created_at=data.get("created_at", ""))
+        return cls(
+            name=data.get("name", ""),
+            versions=versions,
+            created_at=data.get("created_at", ""),
+        )
 
     def save(self, path: str | Path) -> None:
         path = Path(path)
@@ -165,10 +178,12 @@ def compute_diff(
             # Pair up modified lines
             max_len = max(len(base_slice), len(target_slice))
             for k in range(max_len):
-                modified.append({
-                    "base": base_slice[k] if k < len(base_slice) else "",
-                    "target": target_slice[k] if k < len(target_slice) else "",
-                })
+                modified.append(
+                    {
+                        "base": base_slice[k] if k < len(base_slice) else "",
+                        "target": target_slice[k] if k < len(target_slice) else "",
+                    }
+                )
         elif tag == "insert":
             stats["added"] += 1
             added.extend(target_lines[j1:j2])

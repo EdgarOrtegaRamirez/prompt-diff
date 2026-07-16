@@ -58,7 +58,8 @@ class TestDiffResult:
 
     def test_format_stats(self):
         result = DiffResult(
-            base="v1", target="v2",
+            base="v1",
+            target="v2",
             added=["line2"],
             removed=["line1"],
             stats={"added": 1, "removed": 1, "changed": 0, "unchanged": 5},
@@ -77,7 +78,8 @@ class TestDiffResult:
 
     def test_format_unified(self):
         result = DiffResult(
-            base="v1", target="v2",
+            base="v1",
+            target="v2",
             added=["new line"],
             removed=["old line"],
         )

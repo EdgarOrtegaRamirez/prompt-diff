@@ -44,7 +44,9 @@ def show(registry_path, version_id):
     registry = PromptRegistry.load(registry_path)
     version = registry.get_version(version_id)
     if not version:
-        console.print(f"[red]Version '{version_id}' not found in '{registry_path}'[/red]")
+        console.print(
+            f"[red]Version '{version_id}' not found in '{registry_path}'[/red]"
+        )
         sys.exit(1)
 
     console.print(f"[bold]Name:[/bold] {version.name}")
@@ -62,8 +64,13 @@ def show(registry_path, version_id):
 @click.argument("registry_path", callback=_validate_path)
 @click.argument("version1")
 @click.argument("version2")
-@click.option("--format", "fmt", default="unified", type=click.Choice(["unified", "stats", "json"]),
-              help="Output format for diff")
+@click.option(
+    "--format",
+    "fmt",
+    default="unified",
+    type=click.Choice(["unified", "stats", "json"]),
+    help="Output format for diff",
+)
 def diff(registry_path, version1, version2, fmt):
     """Diff two prompt versions."""
     registry = PromptRegistry.load(registry_path)
@@ -128,7 +135,8 @@ def search(registry_path, search, tag):
 
     if search:
         results = [
-            v for v in results
+            v
+            for v in results
             if search.lower() in v.name.lower()
             or any(search.lower() in t.lower() for t in v.tags)
         ]
@@ -138,14 +146,18 @@ def search(registry_path, search, tag):
         return
 
     for v in results:
-        console.print(f"  [cyan]{v.id}[/cyan]  [green]{v.name}[/green]  "
-                       f"[white]{v.created_at[:19]}[/white]  [{', '.join(v.tags)}]")
+        console.print(
+            f"  [cyan]{v.id}[/cyan]  [green]{v.name}[/green]  "
+            f"[white]{v.created_at[:19]}[/white]  [{', '.join(v.tags)}]"
+        )
 
 
 @main.command()
 @click.option("--name", "-n", required=True, help="Name for the prompt version")
 @click.option("--content", "-c", help="Prompt content (or pipe from stdin)")
-@click.option("--file", "-f", type=click.Path(exists=True), help="File containing prompt content")
+@click.option(
+    "--file", "-f", type=click.Path(exists=True), help="File containing prompt content"
+)
 @click.option("--tag", "-t", multiple=True, help="Tags for the version (repeatable)")
 @click.option("--metadata", "-m", help="JSON metadata (key=value pairs)")
 @click.option("--output", "-o", required=True, help="Output registry file path")
